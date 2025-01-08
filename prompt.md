@@ -6,3 +6,10 @@
 6. 把图片上传到WordPress的media库，并设置图片的描述和alt
 7. 如果图片上传失败，则显示失败的原因
 8. 如果图片上传成功，则显示图片的描述和alt，以及图片的小图标
+
+
+
+localhost server application password: nWkc NDAK 8YKF IzRM bLSg ZAoU
+openai api key: sk-Rfl8L4gpNHex3ek1YiJKpbuHxoo4vte4v5bBgXQJiF5EakhZ
+openai api url: https://api2.aigcbest.top/v1
+

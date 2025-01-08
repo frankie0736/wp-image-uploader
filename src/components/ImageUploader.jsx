@@ -14,19 +14,16 @@ const ImageUploader = () => {
   const handleUpload = async (file) => {
     setUploading(true)
     try {
-      // 转换图片为 base64
       const base64 = await new Promise((resolve) => {
         const reader = new FileReader()
         reader.readAsDataURL(file)
         reader.onload = () => resolve(reader.result.split(',')[1])
       })
-
-      // 获取 AI 生成的描述
-      const { description, alt } = await generateImageDescription(base64, config)
-
-      // 上传到 WordPress
-      const result = await uploadToWordPress(file, description, alt, config)
-
+  
+      // metadata 现在包含 title, alt 和 filename
+      const metadata = await generateImageDescription(base64, config)
+      const result = await uploadToWordPress(file, metadata, config)
+  
       message.success('上传成功')
       return result
     } catch (error) {

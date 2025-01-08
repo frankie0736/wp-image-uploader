@@ -1,21 +1,55 @@
 import React from 'react'
-import { Layout, Typography } from 'antd'
+import { Layout, Typography, Button, Space } from 'antd'
+import { SettingOutlined } from '@ant-design/icons'
 import ConfigForm from './components/ConfigForm'
 import ImageUploader from './components/ImageUploader'
+import useConfigStore from './store/configStore'
 
-const { Content } = Layout
-const { Title } = Typography
+const { Content, Footer } = Layout
+const { Title, Link } = Typography
 
 function App() {
+  const { isConfigured, clearConfig } = useConfigStore()
+  const [showSettings, setShowSettings] = React.useState(!isConfigured)
+
+  const handleSettingsClick = () => {
+    setShowSettings(!showSettings)
+  }
+
+  const handleLogout = () => {
+    clearConfig()
+    setShowSettings(true)
+  }
+
   return (
-    <Layout style={{ minHeight: '100vh', padding: '20px' }}>
-      <Content style={{ maxWidth: 800, margin: '0 auto' }}>
-        <Title level={2}>WordPress 图片上传工具</Title>
-        <ConfigForm />
-        <div style={{ marginTop: 20 }}>
-          <ImageUploader />
+    <Layout style={{ minHeight: '100vh' }}>
+      <Content style={{ maxWidth: 800, margin: '0 auto', padding: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <Title level={2}>WordPress 图片上传工具</Title>
+          {isConfigured && (
+            <Space>
+              <Button 
+                icon={<SettingOutlined />} 
+                onClick={handleSettingsClick}
+              >
+                {showSettings ? '返回上传' : '设置'}
+              </Button>
+              <Button onClick={handleLogout} type="link">
+                清除配置
+              </Button>
+            </Space>
+          )}
         </div>
+        
+        {showSettings ? (
+          <ConfigForm />
+        ) : (
+          <ImageUploader />
+        )}
       </Content>
+      <Footer style={{ textAlign: 'center', background: 'transparent' }}>
+        © {new Date().getFullYear()} <a href="https://www.210k.cc" target="_blank" rel="noopener noreferrer">210 工作室</a> - All Rights Reserved
+      </Footer>
     </Layout>
   )
 }
