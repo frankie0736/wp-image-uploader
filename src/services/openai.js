@@ -2,10 +2,11 @@ import axios from 'axios'
 
 export const generateImageDescription = async (base64Image, config) => {
     try {
+      const apiUrl = config.openaiUrl || 'https://api.openai.com/v1';
       const response = await axios.post(
-        `${config.openaiUrl}/chat/completions`,
+        `${apiUrl}/chat/completions`,
         {
-          model: "gpt-4-vision-preview",
+          model: "gpt-4o-mini",
           messages: [
             {
               role: "user",

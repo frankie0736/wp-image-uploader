@@ -56,10 +56,10 @@ const ConfigForm = () => {
         <Form.Item
   label="OpenAI API URL"
   name="openaiUrl"
-  rules={[{ required: true, message: '请输入OpenAI API URL' }]}
-  tooltip="如果使用官方API，输入: https://api.openai.com"
+  rules={[{ required: false, message: '请输入OpenAI API URL' }]}
+  tooltip="如果使用官方API，输入: https://api.openai.com/v1，或者留空即可"
 >
-  <Input placeholder="https://api.openai.com" />
+  <Input placeholder="https://api.openai.com/v1" />
 </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" block>

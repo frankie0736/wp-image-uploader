@@ -13,3 +13,9 @@ localhost server application password: nWkc NDAK 8YKF IzRM bLSg ZAoU
 openai api key: sk-Rfl8L4gpNHex3ek1YiJKpbuHxoo4vte4v5bBgXQJiF5EakhZ
 openai api url: https://api2.aigcbest.top/v1
 
+allen api: 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
+
+
+http://scaffold.local/
+admin
+xpvr jFoO 1gkg jSQP 1MhZ f5ub
