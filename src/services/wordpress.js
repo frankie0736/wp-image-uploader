@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { processImage } from '../utils/imageProcessor'
 
 export async function uploadToWordPress(imageFile, metadata, config) {
   try {
@@ -8,19 +7,12 @@ export async function uploadToWordPress(imageFile, metadata, config) {
       throw new Error('WordPress URL 未设置');
     }
 
-    // 处理图片
-    const processedImage = await processImage(
-      imageFile, 
-      config.maxImageWidth, 
-      config.compressImages
-    );
-
     // 创建一个新的 File 对象，使用生成的文件名
-    const fileExtension = processedImage.name.split('.').pop();
+    const fileExtension = imageFile.name.split('.').pop();
     const newFile = new File(
-      [processedImage], 
+      [imageFile], 
       `${metadata.filename}.${fileExtension}`,
-      { type: processedImage.type }
+      { type: imageFile.type }
     );
 
     const formData = new FormData();

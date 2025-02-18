@@ -16,6 +16,7 @@
 再缩放、转换格式完成之后，再把图片提交到 openai 的 api 去做识别，识别完成后，上传到 WordPress 的图片也要是最终压缩后的图片。
 
 localhost server application password: nWkc NDAK 8YKF IzRM bLSg ZAoU
+
 openai api key: sk-Rfl8L4gpNHex3ek1YiJKpbuHxoo4vte4v5bBgXQJiF5EakhZ
 openai api url: https://api2.aigcbest.top/v1
 
@@ -59,3 +60,14 @@ git remote add origin https://github.com/your-username/your-repository.git
 
 wp
 mNAw 57Mq vFln NVNK yUk0 mGfF
+
+## 图片压缩
+
+图片压缩的规则：
+
+1. 如果 checkbox = unchecked，则不执行任何新操作；
+2. 如果 checkbox = checked，则根据图片的 max width，来对图片进行等比例缩放，再把图片转为 webp 格式
+
+http://ranking.local/
+fx
+5PB6 VSlX BnUR PJr7 Aaql FKgL

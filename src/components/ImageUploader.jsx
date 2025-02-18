@@ -4,14 +4,22 @@ import { InboxOutlined } from '@ant-design/icons'
 import useConfigStore from '../store/configStore'
 import { generateImageDescription } from '../services/openai'
 import { uploadToWordPress } from '../services/wordpress'
+import { processImage } from '../utils/imageProcessor'
+import pLimit from 'p-limit'  // 需要安装这个包：npm install p-limit
+import { getApiUrls } from '../utils/constants'
 
 const { Dragger } = Upload
+const CONCURRENT_LIMIT = 3  // 同时处理的最大图片数
+const { imageProcessor } = getApiUrls()
 
 const ImageUploader = () => {
   const [uploading, setUploading] = useState(false)
   const [uploadedCount, setUploadedCount] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const config = useConfigStore()
+  
+  // 创建并发限制器
+  const limit = pLimit(CONCURRENT_LIMIT)
 
   const handleUpload = async (file) => {
     try {
@@ -20,23 +28,31 @@ const ImageUploader = () => {
         throw new Error('请先完成 WordPress 配置')
       }
 
-      console.log('开始上传图片:', file.name);
+      console.log('开始处理图片:', file.name);
 
-      // 将文件转换为 base64
+      // 1. 先处理图片（如果启用了压缩）
+      const processedImage = await processImage(
+        file,
+        config.maxImageWidth,
+        config.compressImages
+      );
+      console.log('图片处理完成');
+
+      // 2. 将处理后的图片转换为 base64
       const base64 = await new Promise((resolve) => {
         const reader = new FileReader()
-        reader.readAsDataURL(file)
+        reader.readAsDataURL(processedImage)
         reader.onload = () => resolve(reader.result.split(',')[1])
       })
 
-      // 生成图片描述
+      // 3. 生成图片描述
       console.log('开始生成图片描述...');
       const metadata = await generateImageDescription(base64, config)
       console.log('生成的元数据:', metadata);
       
-      // 上传到 WordPress
+      // 4. 上传到 WordPress
       console.log('开始上传到 WordPress...');
-      const result = await uploadToWordPress(file, metadata, config)
+      const result = await uploadToWordPress(processedImage, metadata, config)
       console.log('WordPress 上传结果:', result);
       
       setUploadedCount(prev => prev + 1)
@@ -61,10 +77,24 @@ const ImageUploader = () => {
           // 多文件上传
           setTotalCount(file.length)
           setUploadedCount(0)
-          for (const f of file) {
-            await handleUpload(f)
+          
+          // 使用并发限制处理多个文件
+          const uploadTasks = file.map(f => 
+            limit(() => handleUpload(f))
+          )
+
+          // 等待所有任务完成，但不会立即中断如果有错误
+          const results = await Promise.allSettled(uploadTasks)
+          
+          // 检查结果
+          const failedCount = results.filter(r => r.status === 'rejected').length
+          const successCount = results.filter(r => r.status === 'fulfilled').length
+          
+          if (failedCount > 0) {
+            message.warning(`上传完成：${successCount}个成功，${failedCount}个失败`)
+          } else {
+            message.success('所有图片上传完成！')
           }
-          message.success('所有图片上传完成！')
         } else {
           // 单文件上传
           setTotalCount(1)
@@ -94,7 +124,7 @@ const ImageUploader = () => {
         }
       </p>
       <p className="ant-upload-hint">
-        支持单个或多个图片上传
+        支持单个或多个图片上传（同时处理最多{CONCURRENT_LIMIT}张）
       </p>
     </Dragger>
   )

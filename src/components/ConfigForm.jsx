@@ -1,5 +1,7 @@
 import { Form, Input, Card, Button, message, Checkbox } from 'antd'
 import useConfigStore from '../store/configStore'
+import axios from 'axios'
+import { getApiUrls } from '../utils/constants'
 
 const ConfigForm = () => {
   const { 
@@ -15,15 +17,40 @@ const ConfigForm = () => {
   
   const [form] = Form.useForm()
 
-  const onFinish = (values) => {
-    // 确保 WordPress URL 格式正确
-    const wpUrl = values.wpUrl.replace(/\/+$/, ''); // 移除末尾的斜杠
-    setConfig({ 
-      ...values, 
-      wpUrl,
-      isConfigured: true 
-    });
-    message.success('配置已保存');
+  const validateDomain = async (domain) => {
+    try {
+      const { api } = getApiUrls();
+      const response = await axios.post(`${api}/validate-domain`, {
+        domain
+      });
+      return response.data.allowed;
+    } catch (error) {
+      console.error('域名验证错误:', error);
+      return false;
+    }
+  };
+
+  const onFinish = async (values) => {
+    try {
+      // 确保 WordPress URL 格式正确
+      const wpUrl = values.wpUrl.replace(/\/+$/, ''); // 移除末尾的斜杠
+      
+      // 验证域名
+      const isAllowed = await validateDomain(wpUrl);
+      if (!isAllowed) {
+        message.error('未授权的域名，无法保存配置');
+        return;
+      }
+
+      setConfig({ 
+        ...values, 
+        wpUrl,
+        isConfigured: true 
+      });
+      message.success('配置已保存');
+    } catch (error) {
+      message.error('保存配置失败: ' + error.message);
+    }
   }
 
   return (
