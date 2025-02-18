@@ -7,6 +7,14 @@
 7. 如果图片上传失败，则显示失败的原因
 8. 如果图片上传成功，则显示图片的描述和 alt，以及图片的小图标
 
+2025-2-18 更新的功能：
+在当前项目中，我想加入一个新的功能：图片压缩以及等比例裁剪，首先需要在设置页，添加一个输入框，设置图片的 max width，以及一个 checkbox，让用户可以选择是否压缩处理图片。
+程序处理图片的规则如下：
+如果 checkbox = unchecked，则不执行任何新操作；
+如果 checkbox = checked，则根据图片的 max width，来对图片进行等比例缩放，再把图片转为 webp 格式
+
+再缩放、转换格式完成之后，再把图片提交到 openai 的 api 去做识别，识别完成后，上传到 WordPress 的图片也要是最终压缩后的图片。
+
 localhost server application password: nWkc NDAK 8YKF IzRM bLSg ZAoU
 openai api key: sk-Rfl8L4gpNHex3ek1YiJKpbuHxoo4vte4v5bBgXQJiF5EakhZ
 openai api url: https://api2.aigcbest.top/v1

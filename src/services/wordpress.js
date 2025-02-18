@@ -1,52 +1,68 @@
 import axios from 'axios'
+import { processImage } from '../utils/imageProcessor'
 
-export const uploadToWordPress = async (file, metadata, config) => {
+export async function uploadToWordPress(imageFile, metadata, config) {
   try {
-    // 创建一个新的 File 对象，使用生成的文件名
-    const fileExtension = file.name.split('.').pop()
-    const newFile = new File(
-      [file], 
-      `${metadata.filename}.${fileExtension}`,
-      { type: file.type }
-    )
+    // 检查 config 是否包含必要的信息
+    if (!config.wpUrl) {
+      throw new Error('WordPress URL 未设置');
+    }
 
-    const formData = new FormData()
-    formData.append('file', newFile)
+    // 处理图片
+    const processedImage = await processImage(
+      imageFile, 
+      config.maxImageWidth, 
+      config.compressImages
+    );
+
+    // 创建一个新的 File 对象，使用生成的文件名
+    const fileExtension = processedImage.name.split('.').pop();
+    const newFile = new File(
+      [processedImage], 
+      `${metadata.filename}.${fileExtension}`,
+      { type: processedImage.type }
+    );
+
+    const formData = new FormData();
+    formData.append('file', newFile);
     
     const headers = {
       'Content-Type': 'multipart/form-data',
       'Authorization': 'Basic ' + btoa(config.wpUsername + ':' + config.wpPassword)
-    }
+    };
 
-    console.log('开始上传图片...')
+    // 确保 wpUrl 没有尾部斜杠
+    const baseUrl = config.wpUrl.replace(/\/$/, '');
+    
+    console.log('开始上传图片到:', `${baseUrl}/wp-json/wp/v2/media`);
     // 首先上传图片
     const response = await axios.post(
-      `${config.wpUrl}/wp-json/wp/v2/media`,
+      `${baseUrl}/wp-json/wp/v2/media`,
       formData,
       { headers }
-    )
+    );
 
-    console.log('图片上传成功，开始更新元数据...')
+    console.log('图片上传成功，开始更新元数据...');
     
     // 更新 media 元数据
     const updateHeaders = {
       'Content-Type': 'application/json',
       'Authorization': 'Basic ' + btoa(config.wpUsername + ':' + config.wpPassword)
-    }
+    };
 
     await axios.post(
-      `${config.wpUrl}/wp-json/wp/v2/media/${response.data.id}`,
+      `${baseUrl}/wp-json/wp/v2/media/${response.data.id}`,
       {
         title: metadata.title,
         alt_text: metadata.alt
       },
       { headers: updateHeaders }
-    )
+    );
 
-    console.log('元数据更新成功')
-    return response.data
+    console.log('元数据更新成功');
+    return response.data;
   } catch (error) {
-    console.error('上传过程出错:', error.response?.data || error)
-    throw new Error(error.response?.data?.message || '上传失败')
+    console.error('上传过程出错:', error.response?.data || error);
+    throw new Error(error.response?.data?.message || '上传失败');
   }
 }

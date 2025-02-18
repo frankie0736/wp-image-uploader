@@ -8,23 +8,24 @@ const useConfigStore = create(
       wpUsername: '',
       wpPassword: '',
       openaiKey: '',
-      openaiUrl: 'https://api.openai.com/v1',
+      openaiUrl: '',
       isConfigured: false,
-      setConfig: (config) => set({
-        ...config,
-        openaiUrl: config.openaiUrl || 'https://api.openai.com/v1'
-      }),
+      compressImages: false,
+      maxImageWidth: 1920,
+      setConfig: (config) => set(config),
       clearConfig: () => set({
         wpUrl: '',
         wpUsername: '',
         wpPassword: '',
         openaiKey: '',
         openaiUrl: '',
-        isConfigured: false
+        isConfigured: false,
+        compressImages: false,
+        maxImageWidth: 1920
       }),
     }),
     {
-      name: 'wp-image-uploader-config',
+      name: 'config-storage',
     }
   )
 )
