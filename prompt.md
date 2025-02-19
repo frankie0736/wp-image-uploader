@@ -71,3 +71,7 @@ mNAw 57Mq vFln NVNK yUk0 mGfF
 http://ranking.local/
 fx
 5PB6 VSlX BnUR PJr7 Aaql FKgL
+
+syn application password
+fx
+IYpS zvjb x4yl ZuYh 9VGO Ajnn
