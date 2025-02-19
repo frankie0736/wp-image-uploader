@@ -6,11 +6,9 @@ import { generateImageDescription } from '../services/openai'
 import { uploadToWordPress } from '../services/wordpress'
 import { processImage } from '../utils/imageProcessor'
 import pLimit from 'p-limit'  // 需要安装这个包：npm install p-limit
-import { getApiUrls } from '../utils/constants'
 
 const { Dragger } = Upload
 const CONCURRENT_LIMIT = 3  // 同时处理的最大图片数
-const { imageProcessor } = getApiUrls()
 
 const ImageUploader = () => {
   const [uploading, setUploading] = useState(false)

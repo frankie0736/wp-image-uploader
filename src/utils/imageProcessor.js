@@ -1,4 +1,4 @@
-const PROCESSOR_URL = import.meta.env.VITE_IMAGE_PROCESSOR_URL || 'http://localhost:3001';
+import { getApiUrls } from './constants'
 
 export async function processImage(file, maxWidth, shouldCompress) {
   if (!shouldCompress) {
@@ -6,12 +6,13 @@ export async function processImage(file, maxWidth, shouldCompress) {
   }
 
   try {
+    const { imageProcessor } = getApiUrls()
     const formData = new FormData();
     formData.append('image', file);
     formData.append('maxWidth', maxWidth.toString());
     formData.append('shouldCompress', shouldCompress.toString());
 
-    const response = await fetch(`${PROCESSOR_URL}/process-image`, {
+    const response = await fetch(`${imageProcessor}/process-image`, {
       method: 'POST',
       body: formData
     });
