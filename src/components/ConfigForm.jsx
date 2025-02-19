@@ -68,11 +68,14 @@ const ConfigForm = () => {
         }}
         onFinish={onFinish}
         layout="vertical"
+        size="middle"
+        style={{ gap: '8px' }}
       >
         <Form.Item
           label="WordPress 网站地址"
           name="wpUrl"
           rules={[{ required: true, message: '请输入WordPress网站地址' }]}
+          style={{ marginBottom: '12px' }}
         >
           <Input />
         </Form.Item>
@@ -80,6 +83,7 @@ const ConfigForm = () => {
           label="WordPress 用户名"
           name="wpUsername"
           rules={[{ required: true, message: '请输入用户名' }]}
+          style={{ marginBottom: '12px' }}
         >
           <Input />
         </Form.Item>
@@ -87,6 +91,7 @@ const ConfigForm = () => {
           label="WordPress Application Password"
           name="wpPassword"
           rules={[{ required: true, message: '请输入密码' }]}
+          style={{ marginBottom: '12px' }}
         >
           <Input.Password />
         </Form.Item>
@@ -94,6 +99,7 @@ const ConfigForm = () => {
           label="OpenAI API Key"
           name="openaiKey"
           rules={[{ required: true, message: '请输入OpenAI API Key' }]}
+          style={{ marginBottom: '12px' }}
         >
           <Input.Password />
         </Form.Item>
@@ -102,12 +108,14 @@ const ConfigForm = () => {
           name="openaiUrl"
           rules={[{ required: false, message: '请输入OpenAI API URL' }]}
           tooltip="如果使用官方API，输入: https://api.openai.com/v1，或者留空即可"
+          style={{ marginBottom: '12px' }}
         >
           <Input placeholder="https://api.openai.com/v1" />
         </Form.Item>
         <Form.Item
           name="compressImages"
           valuePropName="checked"
+          style={{ marginBottom: '12px' }}
         >
           <Checkbox>压缩处理图片</Checkbox>
         </Form.Item>
@@ -123,6 +131,7 @@ const ConfigForm = () => {
             message: '请输入100-5000之间的整数'
           }]}
           tooltip="设置图片的最大宽度（像素），超过此宽度的图片将等比例缩小"
+          style={{ marginBottom: '12px' }}
         >
           <Input 
             type="number" 
