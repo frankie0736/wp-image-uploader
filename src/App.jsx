@@ -48,7 +48,7 @@ function App() {
         )}
       </Content>
       <Footer style={{ textAlign: 'center', background: 'transparent' }}>
-        © {new Date().getFullYear()} <a href="https://www.210k.cc" target="_blank" rel="noopener noreferrer">210 工作室</a> | <a href="https://meeting.tencent.com/crm/KeXw5gm3b7" target="_blank" rel="noopener noreferrer">工具操作说明</a>
+        © {new Date().getFullYear()} <a href="https://www.210k.cc" target="_blank" rel="noopener noreferrer">210 工作室</a> | <a href="https://meeting.tencent.com/crm/KeXw5gm3b7" target="_blank" rel="noopener noreferrer">操作视频</a> | <a href="mailto:xu@210k.cc" target="_blank" rel="noopener noreferrer">联系作者</a>
       </Footer>
     </Layout>
   )
