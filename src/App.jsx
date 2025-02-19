@@ -24,8 +24,8 @@ function App() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Content style={{ maxWidth: 800, margin: '0 auto', padding: '20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <Title level={2}>WordPress 图片上传工具</Title>
+        <div style={{ display: 'flex',flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <Title level={1} style={{ fontSize: 24 }}>WordPress 图片智能上传</Title>
           {isConfigured && (
             <Space>
               <Button 
