@@ -5,7 +5,7 @@ export const API_URLS = {
     api: 'http://localhost:3001'
   },
   production: {
-    imageProcessor: 'https://wptools.210k.cc', // 替换为你的后端服务地址
+    imageProcessor: 'https://wptools.210k.cc',
     api: 'https://wptools.210k.cc'
   }
 };

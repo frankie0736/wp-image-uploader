@@ -22,7 +22,7 @@ app.post('/validate-domain', (req, res) => {
     let hostname = domain;
     try {
       hostname = new URL(domain).hostname;
-    } catch (e) {
+    } catch {
       // 如果不是完整URL，就使用原始输入
     }
     
@@ -35,7 +35,7 @@ app.post('/validate-domain', (req, res) => {
       allowed: isAllowed,
       message: isAllowed ? 'Domain is authorized' : 'Unauthorized domain'
     });
-  } catch (error) {
+  } catch {
     res.status(400).json({
       allowed: false,
       message: 'Invalid domain format'
@@ -43,6 +43,7 @@ app.post('/validate-domain', (req, res) => {
   }
 });
 
+// 图片处理接口
 app.post('/process-image', upload.single('image'), async (req, res) => {
   try {
     const maxWidth = parseInt(req.body.maxWidth);
@@ -77,7 +78,7 @@ app.post('/process-image', upload.single('image'), async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`图片处理服务运行在端口 ${PORT}`);
+const port = process.env.PORT || 3001;
+app.listen(port, () => {
+  console.log(`服务运行在端口 ${port}`);
 }); 
