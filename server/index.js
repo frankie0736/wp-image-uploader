@@ -4,6 +4,7 @@ import multer from 'multer';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { allowedDomains } from './config/whitelist.js';
+import { checkDomainStatus } from './services/airtable.js';
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // 验证域名的接口
-app.post('/validate-domain', (req, res) => {
+app.post('/validate-domain', async (req, res) => {
   try {
     const { domain } = req.body;
     
@@ -26,15 +27,9 @@ app.post('/validate-domain', (req, res) => {
       // 如果不是完整URL，就使用原始输入
     }
     
-    // 移除可能的 www. 前缀
-    hostname = hostname.replace(/^www\./i, '');
-    
-    const isAllowed = allowedDomains.includes(hostname);
-    
-    res.json({
-      allowed: isAllowed,
-      message: isAllowed ? 'Domain is authorized' : 'Unauthorized domain'
-    });
+    // 检查域名状态
+    const result = await checkDomainStatus(hostname);
+    res.json(result);
   } catch {
     res.status(400).json({
       allowed: false,

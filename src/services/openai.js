@@ -9,7 +9,7 @@ export const generateImageDescription = async (base64Image, config) => {
       const response = await axios.post(
         `${apiUrl}/chat/completions`,
         {
-          model: "gpt-4-vision-preview",
+          model: "gpt-4-turbo-preview",
           messages: [
             {
               role: "user",
