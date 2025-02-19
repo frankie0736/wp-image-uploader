@@ -54,7 +54,7 @@ function App() {
         <Divider style={{ margin: '12px 0' }} />
         <div style={{ marginTop: '12px', color: '#00000040', fontSize: '12px' }}>
           目前仅限工作室的付费咨询客户使用<br />
-          如需付费购买使用：￥199元/网站，长期可用
+          如需付费购买使用：￥99元/网站，长期可用
         </div>
       </Footer>
     </Layout>
