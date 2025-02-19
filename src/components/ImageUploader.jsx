@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Upload, message } from 'antd'
+import { useState, useCallback } from 'react'
+import { Upload, message, Progress } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import useConfigStore from '../store/configStore'
 import { generateImageDescription } from '../services/openai'
@@ -18,6 +18,11 @@ const ImageUploader = () => {
   
   // 创建并发限制器
   const limit = pLimit(CONCURRENT_LIMIT)
+
+  const updateProgress = useCallback((current, total) => {
+    setUploadedCount(current)
+    setTotalCount(total)
+  }, [])
 
   const handleUpload = async (file) => {
     try {
@@ -72,19 +77,19 @@ const ImageUploader = () => {
       try {
         setUploading(true)
         if (Array.isArray(file)) {
-          // 多文件上传
-          setTotalCount(file.length)
-          setUploadedCount(0)
+          const files = file
+          updateProgress(0, files.length)
           
-          // 使用并发限制处理多个文件
-          const uploadTasks = file.map(f => 
-            limit(() => handleUpload(f))
+          const uploadTasks = files.map((f, index) => 
+            limit(async () => {
+              await handleUpload(f)
+              updateProgress(index + 1, files.length)
+            })
           )
 
-          // 等待所有任务完成，但不会立即中断如果有错误
-          const results = await Promise.allSettled(uploadTasks)
+          await Promise.allSettled(uploadTasks)
           
-          // 检查结果
+          const results = await Promise.allSettled(uploadTasks)
           const failedCount = results.filter(r => r.status === 'rejected').length
           const successCount = results.filter(r => r.status === 'fulfilled').length
           
@@ -94,37 +99,44 @@ const ImageUploader = () => {
             message.success('所有图片上传完成！')
           }
         } else {
-          // 单文件上传
-          setTotalCount(1)
-          setUploadedCount(0)
+          updateProgress(0, 1)
           await handleUpload(file)
+          updateProgress(1, 1)
         }
         onSuccess()
       } catch (error) {
         onError(error)
       } finally {
         setUploading(false)
-        setUploadedCount(0)
-        setTotalCount(0)
+        updateProgress(0, 0)
       }
     }
   }
 
   return (
-    <Dragger {...uploadProps} disabled={uploading}>
-      <p className="ant-upload-drag-icon">
-        <InboxOutlined />
-      </p>
-      <p className="ant-upload-text">
-        {uploading 
-          ? `正在上传... (${uploadedCount}/${totalCount})`
-          : '点击或拖拽图片到此区域上传'
-        }
-      </p>
-      <p className="ant-upload-hint">
-        支持单个或多个图片上传（同时处理最多{CONCURRENT_LIMIT}张）
-      </p>
-    </Dragger>
+    <div>
+      <Dragger {...uploadProps} disabled={uploading}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">
+          {uploading 
+            ? '正在上传...'
+            : '点击或拖拽图片到此区域上传'
+          }
+        </p>
+        <p className="ant-upload-hint">
+          支持单个或多个图片上传（同时处理最多{CONCURRENT_LIMIT}张）
+        </p>
+      </Dragger>
+      {uploading && totalCount > 0 && (
+        <Progress 
+          percent={Math.round((uploadedCount / totalCount) * 100)} 
+          status="active"
+          style={{ marginTop: 16 }}
+        />
+      )}
+    </div>
   )
 }
 

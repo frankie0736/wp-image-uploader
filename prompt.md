@@ -75,3 +75,7 @@ fx
 syn application password
 fx
 IYpS zvjb x4yl ZuYh 9VGO Ajnn
+
+wpbricksdemo.xyz
+wp
+uPOk o5rw dtvZ g1cX e31G Q3UK
