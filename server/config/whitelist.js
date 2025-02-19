@@ -9,9 +9,7 @@ export const allowedDomains = [
   'idrillio.com',
   'staging3.idrillio.com',
   'beechair.com',
-  
-  
-  
+  `theidealight.com`,  
   
   // 添加其他允许的域名
 ]; 
