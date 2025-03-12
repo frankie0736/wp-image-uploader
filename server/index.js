@@ -3,13 +3,16 @@ import sharp from 'sharp';
 import multer from 'multer';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { allowedDomains } from './config/whitelist.js';
 import { checkDomainStatus } from './services/airtable.js';
 
 dotenv.config();
 
 const app = express();
-const upload = multer();
+const upload = multer({
+  limits: {
+    fileSize: 12 * 1024 * 1024 // 12MB 的文件大小限制
+  }
+});
 
 app.use(cors());
 app.use(express.json());

@@ -25,8 +25,8 @@ export async function uploadToWordPress(imageFile, metadata, config) {
 
     // 确保 wpUrl 没有尾部斜杠
     const baseUrl = config.wpUrl.replace(/\/$/, '');
-    
-    console.log('开始上传图片到:', `${baseUrl}/wp-json/wp/v2/media`);
+    console.log('开始上传图片');
+    // console.log('开始上传图片到:', `${baseUrl}/wp-json/wp/v2/media`);
     // 首先上传图片
     const response = await axios.post(
       `${baseUrl}/wp-json/wp/v2/media`,

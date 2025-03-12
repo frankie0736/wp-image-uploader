@@ -4,7 +4,7 @@ import { processImage } from '../utils/imageProcessor'
 export const generateImageDescription = async (base64Image, config) => {
     try {
       const apiUrl = config.openaiUrl || 'https://api.openai.com/v1';
-      console.log('OpenAI API 请求地址:', apiUrl);
+      console.log('向此地址发送请求（OpenAI接口）：', apiUrl);
 
       const response = await axios.post(
         `${apiUrl}/chat/completions`,
@@ -16,7 +16,7 @@ export const generateImageDescription = async (base64Image, config) => {
               content: [
                 {
                   type: "text",
-                  text: "Please describe this image and return in strict JSON format with three fields: 1. title (short title), 2. alt (alternative text), 3. filename (lowercase letters and hyphens only). Return only the JSON object without any markdown formatting or code blocks."
+                  text: "Please describe this image and return in strict JSON format with three fields, please take the original file name into consideration if it's not just random or meaningless texts: 1. title (short title), 2. alt (alternative text), 3. filename (lowercase letters and hyphens only). Return only the JSON object without any markdown formatting or code blocks."
                 },
                 {
                   type: "image_url",
@@ -37,7 +37,7 @@ export const generateImageDescription = async (base64Image, config) => {
         }
       )
   
-      console.log('OpenAI 原始响应:', response.data);
+      // console.log('OpenAI 原始响应:', response.data);
   
       let result;
       try {
@@ -47,7 +47,7 @@ export const generateImageDescription = async (base64Image, config) => {
           .replace(/\n```$/, '')      // 移除结尾的 ```
           .trim();
 
-        console.log('清理后的内容:', content);
+        console.log('OpenAI 响应内容(清理后):', content);
         result = JSON.parse(content);
       } catch (parseError) {
         console.error('JSON 解析失败:', parseError);
@@ -86,7 +86,7 @@ export const generateImageDescription = async (base64Image, config) => {
           .replace(/^-|-$/g, '')
       };
   
-      console.log('处理后的结果:', cleanResult);
+      // console.log('处理后的结果:', cleanResult);
   
       return cleanResult;
     } catch (error) {

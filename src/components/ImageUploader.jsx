@@ -56,7 +56,7 @@ const ImageUploader = () => {
       // 4. 上传到 WordPress
       console.log('开始上传到 WordPress...');
       const result = await uploadToWordPress(processedImage, metadata, config)
-      console.log('WordPress 上传结果:', result);
+      // console.log('WordPress 上传结果:', result);
       
       setUploadedCount(prev => prev + 1)
       message.success(`${file.name} 上传成功！`)
