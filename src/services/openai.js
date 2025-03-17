@@ -16,7 +16,7 @@ export const generateImageDescription = async (base64Image, config) => {
               content: [
                 {
                   type: "text",
-                  text: "Please describe this image and return in strict JSON format with three fields, please take the original file name into consideration if it's not just random or meaningless texts: 1. title (short title), 2. alt (alternative text), 3. filename (lowercase letters and hyphens only). Return only the JSON object without any markdown formatting or code blocks."
+                  text: "Please describe this image and return in strict JSON format with three fields, please take the original file name into first consideration if it's not just random or meaningless texts: 1. title (short title), 2. alt (alternative text), 3. filename (lowercase letters and hyphens only). Return only the JSON object without any markdown formatting or code blocks."
                 },
                 {
                   type: "image_url",
