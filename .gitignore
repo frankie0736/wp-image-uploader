@@ -20,4 +20,11 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
-prompt.md
+prompt.mdnode_modules
+npm-debug.log
+dist
+.git
+.github
+.vscode
+uploads
+.DS_Store
