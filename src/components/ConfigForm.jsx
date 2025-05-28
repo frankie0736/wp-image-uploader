@@ -17,16 +17,25 @@ const ConfigForm = () => {
   
   const [form] = Form.useForm()
 
-  const validateDomain = async (domain) => {
+  const validateDomainWithMessage = async (domain) => {
     try {
+      console.log('开始验证域名:', domain);
       const { api } = getApiUrls();
+      console.log('API地址:', api);
+      
       const response = await axios.post(`${api}/validate-domain`, {
         domain
       });
-      return response.data.allowed;
+      
+      console.log('域名验证响应:', response.data);
+      return response.data;
     } catch (error) {
       console.error('域名验证错误:', error);
-      return false;
+      console.error('错误详情:', error.response?.data);
+      return {
+        allowed: false,
+        message: '域名验证失败: ' + (error.response?.data?.message || error.message)
+      };
     }
   };
 
@@ -36,9 +45,9 @@ const ConfigForm = () => {
       const wpUrl = values.wpUrl.replace(/\/+$/, ''); // 移除末尾的斜杠
       
       // 验证域名
-      const isAllowed = await validateDomain(wpUrl);
-      if (!isAllowed) {
-        message.error('未授权的域名，无法保存配置');
+      const domainResult = await validateDomainWithMessage(wpUrl);
+      if (!domainResult.allowed) {
+        message.error(domainResult.message || '未授权的域名，无法保存配置');
         return;
       }
 
