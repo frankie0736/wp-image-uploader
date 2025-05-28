@@ -3,6 +3,8 @@ import sharp from 'sharp';
 import multer from 'multer';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { checkDomainStatus } from './services/domainService.js';
 import { initializeDatabase, addDomainToWhitelist, getAllDomains } from './services/database.js';
 
@@ -18,8 +20,15 @@ const upload = multer({
 // API Token for domain management
 const API_TOKEN = 'wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z';
 
+// 获取当前文件的目录路径
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.use(cors());
 app.use(express.json());
+
+// 服务静态文件
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // 初始化数据库
 await initializeDatabase();
@@ -134,6 +143,11 @@ app.post('/process-image', upload.single('image'), async (req, res) => {
     console.error('图片处理错误:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// 处理SPA路由 - 必须放在所有API路由之后
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 const port = process.env.PORT || 3001;
