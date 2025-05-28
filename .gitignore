@@ -1,31 +1,8 @@
-# Node
-node_modules
-dist
-.env
-.env.local
+# 忽略所有文件
+*
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Editor
-.vscode
-.idea
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-prompt.mdnode_modules
-npm-debug.log
-dist
-.git
-.github
-.vscode
-uploads
-.DS_Store
-*.md
+# 但是保留这些部署相关文件
+!.gitignore
+!start.sh
+!docker-compose.yml
+!README.md
