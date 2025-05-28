@@ -1,31 +1,8 @@
-# Dependencies
-node_modules/
+# 忽略所有文件
+*
 
-# Build output
-dist/
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Logs
-*.log
-npm-debug.log*
-
-# Runtime data
-uploads/
-
-# Temporary files
-*.tmp
-docker-compose.tmp.yml
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
+# 但是保留这些部署相关文件
+!.gitignore
+!start.sh
+!docker-compose.yml
+!README.md
