@@ -4,11 +4,21 @@ services:
   wp-image-uploader:
     image: frankie0736/wp-image-uploader:latest
     container_name: wp-image-uploader
-    ports:
-      - "PORT_PLACEHOLDER:3001"
     restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3001}:3001"
+    environment:
+      - WP_AUTH_TOKEN=${WP_AUTH_TOKEN:-wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z}
+      - DATABASE_URL=${DATABASE_URL}
+      - PORT=${PORT:-3001}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE:-10485760}
+      - UPLOAD_DIR=${UPLOAD_DIR:-/app/uploads}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - NODE_ENV=${NODE_ENV:-production}
+    volumes:
+      - ./uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/api/domains?token=wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z"]
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/domains?token=${WP_AUTH_TOKEN:-wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z}"]
       interval: 30s
       timeout: 10s
       retries: 3

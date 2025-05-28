@@ -1,52 +1,60 @@
 #!/bin/bash
 
-# WordPress图片上传工具 - 一键启动脚本
+# WordPress图片上传工具 - 容器部署脚本
+# 支持环境变量配置
+
 echo "==================================="
 echo "WordPress图片上传工具 - 容器部署"
 echo "==================================="
-echo ""
 
-# 检查Docker和Docker Compose是否安装
-if ! command -v docker &> /dev/null; then
-    echo "❌ 错误: Docker未安装，请先安装Docker"
+# 检查.env文件
+if [ ! -f ".env" ]; then
+    echo "🔧 未找到.env配置文件，正在创建..."
+    if [ -f ".env.example" ]; then
+        cp .env.example .env
+        echo "✅ 已创建.env文件，请编辑配置后重新运行"
+        echo ""
+        echo "📝 需要配置的重要项目："
+        echo "   - DATABASE_URL: Neon数据库连接字符串"
+        echo "   - WP_AUTH_TOKEN: API访问授权token"
+        echo ""
+        echo "🚀 配置完成后请重新运行: ./start.sh"
+        exit 0
+    else
+        echo "❌ 缺少.env.example文件，无法创建配置文件"
+        exit 1
+    fi
+fi
+
+# 加载环境变量
+set -a
+source .env
+set +a
+
+# 检查必要的环境变量
+if [ -z "$DATABASE_URL" ] || [ "$DATABASE_URL" = "postgresql://username:password@hostname:5432/database?sslmode=require" ]; then
+    echo "❌ 请先配置DATABASE_URL环境变量"
+    echo "📝 编辑.env文件，设置正确的Neon数据库连接字符串"
     exit 1
 fi
 
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-    echo "❌ 错误: Docker Compose未安装，请先安装Docker Compose"
-    exit 1
+# 获取端口配置
+if [ -z "$HOST_PORT" ]; then
+    read -p "请输入要使用的端口号 (默认: ${PORT:-3001}): " input_port
+    HOST_PORT=${input_port:-${PORT:-3001}}
 fi
-
-# 询问端口号
-while true; do
-    read -p "请输入要使用的端口号 (默认: 3001): " PORT
-    PORT=${PORT:-3001}
-    
-    # 验证端口号格式
-    if [[ ! $PORT =~ ^[0-9]+$ ]] || [ $PORT -lt 1 ] || [ $PORT -gt 65535 ]; then
-        echo "❌ 请输入有效的端口号 (1-65535)"
-        continue
-    fi
-    
-    # 检查端口是否被占用
-    if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-        echo "❌ 端口 $PORT 已被占用，请选择其他端口"
-        continue
-    fi
-    
-    break
-done
 
 echo ""
 echo "📋 配置信息:"
-echo "   - 端口: $PORT"
+echo "   - 端口: $HOST_PORT"
 echo "   - 镜像: frankie0736/wp-image-uploader:latest"
 echo "   - 容器名称: wp-image-uploader"
+echo "   - 授权Token: ${WP_AUTH_TOKEN:0:20}..."
+echo "   - 数据库: ${DATABASE_URL:0:30}..."
 echo ""
 
-# 询问是否继续
-read -p "是否继续部署? (y/N): " CONFIRM
-if [[ ! $CONFIRM =~ ^[Yy]$ ]]; then
+read -p "是否继续部署? (y/N): " confirm
+if [[ $confirm != [yY] && $confirm != [yY][eE][sS] ]]; then
     echo "取消部署"
     exit 0
 fi
@@ -54,16 +62,15 @@ fi
 echo ""
 echo "🚀 开始部署..."
 
-# 停止并删除已存在的容器
-if docker ps -a --format "table {{.Names}}" | grep -q "^wp-image-uploader$"; then
-    echo "🛑 停止现有容器..."
-    docker stop wp-image-uploader >/dev/null 2>&1
-    docker rm wp-image-uploader >/dev/null 2>&1
-fi
+# 停止现有容器
+echo "🛑 停止现有容器..."
+docker stop wp-image-uploader 2>/dev/null || true
+docker rm wp-image-uploader 2>/dev/null || true
 
-# 创建临时的docker-compose文件
+# 生成临时配置文件
 echo "📝 生成配置文件..."
-sed "s/PORT_PLACEHOLDER/$PORT/g" docker-compose.yml > docker-compose.tmp.yml
+export HOST_PORT
+envsubst < docker-compose.yml > docker-compose.tmp.yml
 
 # 拉取最新镜像
 echo "📥 拉取最新镜像..."
@@ -71,44 +78,44 @@ docker pull frankie0736/wp-image-uploader:latest
 
 # 启动服务
 echo "🚀 启动服务..."
-if command -v docker-compose &> /dev/null; then
-    docker-compose -f docker-compose.tmp.yml up -d
-else
-    docker compose -f docker-compose.tmp.yml up -d
-fi
-
-# 清理临时文件
-rm -f docker-compose.tmp.yml
+docker-compose -f docker-compose.tmp.yml up -d
 
 # 等待服务启动
 echo "⏳ 等待服务启动..."
 sleep 5
 
-# 检查容器状态
-if docker ps --format "table {{.Names}}\t{{.Status}}" | grep -q "wp-image-uploader.*Up"; then
+# 检查服务状态
+if docker ps | grep -q "wp-image-uploader"; then
     echo ""
     echo "✅ 部署成功!"
     echo ""
     echo "📍 访问信息:"
-    echo "   - 本地访问: http://localhost:$PORT"
+    echo "   - 本地访问: http://localhost:$HOST_PORT"
     
-    # 尝试获取外网IP
-    EXTERNAL_IP=$(curl -s ifconfig.me 2>/dev/null || curl -s ipecho.net/plain 2>/dev/null || echo "获取失败")
-    if [ "$EXTERNAL_IP" != "获取失败" ]; then
-        echo "   - 外网访问: http://$EXTERNAL_IP:$PORT"
+    # 获取外网IP
+    external_ip=$(curl -s ifconfig.me 2>/dev/null || curl -s ipinfo.io/ip 2>/dev/null || echo "无法获取")
+    if [ "$external_ip" != "无法获取" ]; then
+        echo "   - 外网访问: http://$external_ip:$HOST_PORT"
     fi
     
     echo ""
     echo "🔗 API接口:"
     echo "   - 域名验证: GET /api/check-domain?domain=your-domain.com"
     echo "   - 添加域名: POST /api/add-domain"
-    echo "   - 域名列表: GET /api/domains?token=wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z"
+    echo "   - 域名列表: GET /api/domains?token=$WP_AUTH_TOKEN"
     echo ""
     echo "📖 查看日志: docker logs -f wp-image-uploader"
     echo "🛑 停止服务: docker stop wp-image-uploader"
     echo "🗑️  删除容器: docker rm wp-image-uploader"
+    
+    # 清理临时文件
+    rm -f docker-compose.tmp.yml
 else
     echo ""
     echo "❌ 部署失败，请检查日志:"
     echo "docker logs wp-image-uploader"
+    
+    # 清理临时文件
+    rm -f docker-compose.tmp.yml
+    exit 1
 fi 
