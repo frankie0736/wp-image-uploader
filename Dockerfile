@@ -31,10 +31,11 @@ RUN apk add --no-cache \
     make \
     g++
 
-# 复制package.json和package-lock.json
-COPY package*.json ./
+# 复制server目录的package.json
+COPY server/package*.json ./server/
 
-# 只安装生产依赖
+# 安装server依赖
+WORKDIR /app/server
 RUN npm ci --only=production
 
 # 强制重新安装Sharp以确保二进制兼容
@@ -43,6 +44,9 @@ RUN npm install sharp --platform=linuxmusl --arch=x64
 
 # 清理缓存
 RUN npm cache clean --force
+
+# 回到app目录
+WORKDIR /app
 
 # 从构建阶段复制构建产物
 COPY --from=builder /app/dist ./dist
