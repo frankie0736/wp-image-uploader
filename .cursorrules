@@ -1,0 +1,263 @@
+# WordPress图片上传工具 - Cursor AI 开发规则
+
+## 🎯 项目概述
+这是一个WordPress图片上传工具项目，使用React + Node.js技术栈，采用Docker容器化部署。
+
+## 📋 分支管理规则
+
+### 🌟 严格遵守分支结构
+- **main分支**：仅包含部署文件(docker-compose.yml, start.sh, README.md, .gitignore)，用户友好
+- **dev分支**：完整源代码，所有开发工作都在此分支进行
+- **禁止**：直接在main分支进行源代码开发
+
+### ⚠️ 关键禁令
+1. **绝对不能**将src/、server/等源代码目录推送到main分支
+2. **绝对不能**在main分支进行功能开发
+3. **绝对不能**删除或破坏dev分支
+4. **绝对不能**强制推送覆盖远程分支(除非明确授权)
+
+## 🚀 开发工作流程
+
+### 1. 开始任何开发工作
+```bash
+# 必须先切换到dev分支
+git checkout dev
+git pull origin dev
+```
+
+### 2. 进行开发
+- 所有代码修改都在dev分支
+- 定期提交并推送到dev分支
+- 使用清晰的commit message
+
+### 3. 部署文件更新
+当需要更新部署相关文件时：
+```bash
+# 在dev分支修改部署文件
+git checkout dev
+# 修改后提交到dev分支
+git add .
+git commit -m "update: 优化部署配置"
+git push origin dev
+
+# 同步到main分支
+git checkout main
+git checkout dev -- start.sh docker-compose.yml README.md .gitignore
+git add .
+git commit -m "sync: 同步部署文件更新"
+git push origin main
+```
+
+## 🛠️ 技术栈信息
+
+### 前端 (React + Vite)
+- 框架：React 18
+- 构建工具：Vite
+- 开发端口：5173
+- UI库：Ant Design
+- 样式：CSS Modules + Tailwind CSS
+
+### 后端 (Node.js + Express)
+- 框架：Express.js
+- 数据库：PostgreSQL (Neon DB)
+- 文件存储：本地存储 + 可选云存储
+- 运行端口：3001
+
+### 部署 (Docker)
+- 容器化：Docker + Docker Compose
+- 镜像：frankie0736/wp-image-uploader:latest
+- 平台：linux/amd64
+
+## 📁 项目结构理解
+
+### dev分支结构
+```
+├── src/                    # React前端源码
+│   ├── components/         # React组件
+│   ├── hooks/             # 自定义hooks
+│   ├── utils/             # 工具函数
+│   └── styles/            # 样式文件
+├── server/                # Node.js后端源码
+│   ├── routes/            # 路由文件
+│   ├── middleware/        # 中间件
+│   ├── models/            # 数据模型
+│   └── uploads/           # 上传文件存储
+├── public/                # 静态资源
+├── package.json           # 前端依赖
+├── server/package.json    # 后端依赖
+├── Dockerfile             # Docker构建文件
+├── docker-compose.yml     # Docker编排文件
+├── start.sh              # 启动脚本
+└── README.md             # 项目说明
+```
+
+### main分支结构
+```
+├── docker-compose.yml     # Docker编排模板
+├── start.sh              # 一键启动脚本
+├── README.md             # 用户使用说明
+└── .gitignore            # 部署用忽略规则
+```
+
+## 🔧 开发命令
+
+### 本地开发
+```bash
+npm run dev          # 启动前端开发服务器
+npm run server       # 启动后端开发服务器
+npm start           # 同时启动前后端
+npm run build       # 构建生产版本
+```
+
+### Docker操作
+```bash
+# 构建镜像
+docker build --platform linux/amd64 -t frankie0736/wp-image-uploader:latest .
+
+# 推送镜像
+docker push frankie0736/wp-image-uploader:latest
+
+# 本地测试
+docker-compose up -d
+```
+
+## 🚨 常见踩坑记录与解决方案
+
+### 1. 🔥 Sharp包依赖问题
+**问题现象**：
+```
+Error: Cannot find module '../build/Release/sharp-linuxmusl-x64.node'
+Something went wrong installing the "sharp" module
+```
+
+**根本原因**：
+- Sharp是图片处理库，需要编译二进制文件
+- Alpine Linux使用musl libc，需要特定的二进制文件
+- Docker构建时安装顺序错误导致编译的二进制文件被覆盖
+
+**解决方案**：
+```dockerfile
+# ❌ 错误做法：在复制代码前安装Sharp
+RUN npm ci --omit=dev
+RUN npm install sharp --platform=linuxmusl --arch=x64
+COPY server ./server  # 这会覆盖掉重新安装的Sharp！
+
+# ✅ 正确做法：在复制代码后安装Sharp
+RUN npm ci --omit=dev
+COPY server ./server
+WORKDIR /app/server
+RUN npm uninstall sharp
+RUN npm install sharp --platform=linuxmusl --arch=x64
+```
+
+### 2. 🔥 依赖包缺失问题
+**问题现象**：
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'pg' imported from /app/server/services/database.js
+```
+
+**根本原因**：
+- server/package.json中缺少必要的依赖包
+- npm ci需要package-lock.json与package.json同步
+
+**解决方案**：
+```bash
+# 1. 添加缺失依赖到server/package.json
+# 2. 生成/更新package-lock.json
+cd server && npm install
+# 3. 提交更新的lock文件
+git add package-lock.json && git commit -m "fix: 更新依赖锁文件"
+```
+
+### 3. 🔥 Docker构建缓存问题
+**问题现象**：
+- 修改了依赖但Docker构建使用旧缓存
+- 构建成功但运行时仍然报错
+
+**解决方案**：
+```bash
+# 清理Docker缓存重新构建
+docker system prune -a
+docker build --no-cache --platform linux/amd64 -t frankie0736/wp-image-uploader:latest .
+```
+
+### 4. 🔥 多阶段构建文件覆盖问题
+**问题现象**：
+- 在一个阶段安装/配置的文件被后续阶段覆盖
+- 导致运行时找不到正确的文件
+
+**关键原则**：
+- **先复制代码，再安装/配置依赖**
+- **确保工作目录切换正确**
+- **避免COPY操作覆盖已配置的依赖**
+
+## 🚨 AI助手行为准则
+
+### 在执行任何Git操作前
+1. **必须先检查当前分支**：使用`git branch`确认当前分支
+2. **确认文件位置**：检查要修改的文件是否在正确的分支
+3. **遵循分支规则**：确保操作符合分支管理规则
+
+### 代码修改原则
+1. **源代码修改**：必须在dev分支进行
+2. **部署文件修改**：在dev分支修改后同步到main分支
+3. **测试验证**：重要修改后建议进行构建测试
+
+### Docker构建检查清单
+1. **依赖完整性**：确保package.json包含所有必要依赖
+2. **Lock文件同步**：确保package-lock.json与package.json匹配
+3. **安装顺序**：先复制代码，再安装特殊依赖（如Sharp）
+4. **平台兼容性**：使用正确的platform和arch参数
+5. **工作目录**：确保在正确目录执行命令
+
+### 错误处理
+1. **分支错误**：如果发现在错误分支，立即停止操作
+2. **权限确认**：任何可能影响分支结构的操作都要确认
+3. **回滚准备**：重要操作前确保有回滚方案
+
+## 📝 常用场景处理
+
+### 场景1：添加新功能
+- 在dev分支开发
+- 测试完成后更新Docker镜像
+- 如需更新部署配置，同步到main分支
+
+### 场景2：修复Bug
+- 在dev分支修复
+- 如果是紧急修复，可先在main分支修复部署文件，再同步到dev分支
+
+### 场景3：更新依赖
+- 在dev分支更新package.json
+- 重新生成package-lock.json
+- 重新构建Docker镜像
+- 测试无误后推送新镜像
+
+### 场景4：Sharp或其他编译依赖问题
+- 检查Dockerfile中的安装顺序
+- 确保在复制代码后重新安装
+- 使用正确的平台参数
+- 清理Docker缓存重新构建
+
+## 🎨 代码风格要求
+
+### JavaScript/React
+- 使用ES6+语法
+- 优先使用函数组件和Hooks
+- 使用Prettier格式化代码
+- 遵循ESLint规则
+
+### API设计
+- RESTful API设计
+- 统一的错误处理
+- 详细的API文档
+- 适当的状态码使用
+
+### 文件组织
+- 组件按功能模块组织
+- 工具函数单独存放
+- 样式文件与组件对应
+- 配置文件集中管理
+
+---
+
+**记住：踩过的坑要记录，避免重复踩坑！安全的开发流程是项目稳定性的保障！** 

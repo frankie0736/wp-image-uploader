@@ -23,7 +23,6 @@ docker-compose.tmp.yml
 # IDE
 .vscode/
 .idea/
-.cursorrules
 *.swp
 *.swo
 
