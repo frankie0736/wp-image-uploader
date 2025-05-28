@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "builds": [
+    { 
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/validate-domain",
+      "dest": "server/index.js"
+    },
+    {
+      "src": "/process-image",
+      "dest": "server/index.js"
+    },
+    {
+      "src": "^/assets/(.*)",
+      "dest": "/dist/assets/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist/$1"
+    }
+  ]
+} 
