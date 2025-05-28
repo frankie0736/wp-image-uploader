@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  wp-image-uploader:
+    image: frankie0736/wp-image-uploader:latest
+    container_name: wp-image-uploader
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3001}:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - wp-uploader-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/domains?token=wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  wp-uploader-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  logs: 
