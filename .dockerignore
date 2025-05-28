@@ -1,0 +1,60 @@
+# 依赖和构建文件
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 开发工具
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log
+
+# 开发环境文件
+.env
+.env.local
+.env.development
+.env.example
+
+# 构建产物（会重新构建）
+dist
+
+# 临时文件
+uploads
+logs
+*.tmp
+*.temp
+
+# 文档和说明
+README.md
+*.md
+prompt.md
+DEPLOYMENT.md
+API_DOCS.md
+
+# 测试文件
+test
+tests
+*.test.js
+*.spec.js
+__tests__
+
+# 开发脚本
+server/scripts
+
+# Docker相关（避免嵌套）
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# 其他配置文件
+.eslintrc*
+.prettierrc*
+.editorconfig
+.gitattributes
