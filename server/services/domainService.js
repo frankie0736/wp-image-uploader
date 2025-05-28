@@ -1,3 +1,11 @@
+import { checkDomainStatus as checkDomainInDB } from './database.js';
+
+export async function checkDomainStatus(domain) {
+  // 使用Neon数据库进行域名验证
+  return await checkDomainInDB(domain);
+}
+
+/* 原始的Airtable验证代码（已废弃）
 // import Airtable from 'airtable';
 
 // const AIRTABLE_CONFIG = {

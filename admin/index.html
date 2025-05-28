@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>域名授权管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #1890ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .login-section, .admin-section {
+            display: none;
+        }
+        
+        .login-section.active, .admin-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        
+        .btn {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background: #40a9ff;
+        }
+        
+        .btn:disabled {
+            background: #f5f5f5;
+            color: #bfbfbf;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .message.success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        
+        .message.error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+        
+        .domains-list {
+            margin-top: 30px;
+        }
+        
+        .domains-list h3 {
+            margin-bottom: 15px;
+            color: #262626;
+        }
+        
+        .domain-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            background: #fafafa;
+        }
+        
+        .domain-name {
+            font-weight: 500;
+            color: #262626;
+        }
+        
+        .domain-status {
+            font-size: 12px;
+            color: #8c8c8c;
+        }
+        
+        .status-active {
+            color: #52c41a;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #8c8c8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>域名授权管理</h1>
+            <p>WordPress 图片上传工具 - 管理面板</p>
+        </div>
+        
+        <div class="content">
+            <!-- 登录界面 -->
+            <div class="login-section active">
+                <div class="form-group">
+                    <label for="password">请输入管理密码：</label>
+                    <input type="password" id="password" placeholder="输入密码">
+                </div>
+                <button class="btn" onclick="login()">登录</button>
+                <div id="loginMessage"></div>
+            </div>
+            
+            <!-- 管理界面 -->
+            <div class="admin-section">
+                <div class="form-group">
+                    <label for="domain">添加授权域名：</label>
+                    <input type="text" id="domain" placeholder="输入域名或完整URL，如：https://example.com 或 example.com">
+                </div>
+                <button class="btn" onclick="addDomain()">添加域名</button>
+                <div id="adminMessage"></div>
+                
+                <div class="domains-list">
+                    <h3>已授权域名列表</h3>
+                    <div id="domainsList" class="loading">加载中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLoggedIn = false;
+
+        // 登录功能
+        async function login() {
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            if (!password) {
+                showMessage(messageDiv, '请输入密码', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    isLoggedIn = true;
+                    document.querySelector('.login-section').classList.remove('active');
+                    document.querySelector('.admin-section').classList.add('active');
+                    loadDomains();
+                } else {
+                    showMessage(messageDiv, result.message, 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, '网络错误，请重试', 'error');
+            }
+        }
+        
+        // 添加域名
+        async function addDomain() {
+            if (!isLoggedIn) return;
+            
+            const domain = document.getElementById('domain').value.trim();
+            const messageDiv = document.getElementById('adminMessage');
+            
+            if (!domain) {
+                showMessage(messageDiv, '请输入域名', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/admin/add-domain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ domain })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(messageDiv, `域名 ${result.domain} 添加成功`, 'success');
+                    document.getElementById('domain').value = '';
+                    loadDomains(); // 重新加载域名列表
+                } else {
+                    showMessage(messageDiv, result.message, 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, '网络错误，请重试', 'error');
+            }
+        }
+        
+        // 加载域名列表
+        async function loadDomains() {
+            const listDiv = document.getElementById('domainsList');
+            listDiv.innerHTML = '<div class="loading">加载中...</div>';
+            
+            try {
+                const response = await fetch('/admin/domains');
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.domains.length === 0) {
+                        listDiv.innerHTML = '<div class="loading">暂无授权域名</div>';
+                    } else {
+                        listDiv.innerHTML = result.domains.map(domain => `
+                            <div class="domain-item">
+                                <div>
+                                    <div class="domain-name">${domain.domain}</div>
+                                    <div class="domain-status ${domain.is_active ? 'status-active' : ''}">
+                                        ${domain.is_active ? '已激活' : '未激活'} · 
+                                        更新时间: ${new Date(domain.update_date).toLocaleString('zh-CN')}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    listDiv.innerHTML = '<div class="loading">加载失败</div>';
+                }
+            } catch (error) {
+                listDiv.innerHTML = '<div class="loading">网络错误</div>';
+            }
+        }
+        
+        // 显示消息
+        function showMessage(element, message, type) {
+            element.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
+        }
+        
+        // 回车键事件
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+        
+        document.getElementById('domain').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addDomain();
+            }
+        });
+    </script>
+</body>
+</html> 

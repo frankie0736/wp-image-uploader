@@ -3,7 +3,9 @@ import sharp from 'sharp';
 import multer from 'multer';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { checkDomainStatus } from './services/airtable.js';
+import path from 'path';
+import { checkDomainStatus } from './services/domainService.js';
+import { initializeDatabase, addDomainToWhitelist, getAllDomains } from './services/database.js';
 
 dotenv.config();
 
@@ -16,6 +18,9 @@ const upload = multer({
 
 app.use(cors());
 app.use(express.json());
+
+// 初始化数据库
+await initializeDatabase();
 
 // 验证域名的接口
 app.post('/validate-domain', async (req, res) => {
@@ -37,6 +42,58 @@ app.post('/validate-domain', async (req, res) => {
     res.status(400).json({
       allowed: false,
       message: 'Invalid domain format'
+    });
+  }
+});
+
+// 管理员验证接口
+app.post('/admin/verify', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === 'wpimg') {
+    res.json({
+      success: true,
+      message: '验证成功'
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      message: '密码错误'
+    });
+  }
+});
+
+// 添加域名到白名单
+app.post('/admin/add-domain', async (req, res) => {
+  try {
+    const { domain } = req.body;
+    
+    if (!domain) {
+      return res.status(400).json({
+        success: false,
+        message: '域名不能为空'
+      });
+    }
+    
+    const result = await addDomainToWhitelist(domain);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: '服务器错误: ' + error.message
+    });
+  }
+});
+
+// 获取所有域名列表
+app.get('/admin/domains', async (req, res) => {
+  try {
+    const result = await getAllDomains();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: '服务器错误: ' + error.message
     });
   }
 });
@@ -76,7 +133,11 @@ app.post('/process-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// 静态文件服务（用于管理页面）
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+app.use('/admin-panel', express.static(path.join(__dirname, '../admin')));
+
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`服务运行在端口 ${port}`);
-}); 
+});
