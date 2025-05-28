@@ -3,7 +3,6 @@ import sharp from 'sharp';
 import multer from 'multer';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
 import { checkDomainStatus } from './services/domainService.js';
 import { initializeDatabase, addDomainToWhitelist, getAllDomains } from './services/database.js';
 
@@ -15,6 +14,9 @@ const upload = multer({
     fileSize: 12 * 1024 * 1024 // 12MB 的文件大小限制
   }
 });
+
+// API Token for domain management
+const API_TOKEN = 'wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z';
 
 app.use(cors());
 app.use(express.json());
@@ -46,27 +48,18 @@ app.post('/validate-domain', async (req, res) => {
   }
 });
 
-// 管理员验证接口
-app.post('/admin/verify', (req, res) => {
-  const { password } = req.body;
-  
-  if (password === 'wpimg') {
-    res.json({
-      success: true,
-      message: '验证成功'
-    });
-  } else {
-    res.status(401).json({
-      success: false,
-      message: '密码错误'
-    });
-  }
-});
-
-// 添加域名到白名单
-app.post('/admin/add-domain', async (req, res) => {
+// API接口：添加域名到白名单
+app.post('/api/add-domain', async (req, res) => {
   try {
-    const { domain } = req.body;
+    const { token, domain } = req.body;
+    
+    // 验证token
+    if (token !== API_TOKEN) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid API token'
+      });
+    }
     
     if (!domain) {
       return res.status(400).json({
@@ -85,9 +78,19 @@ app.post('/admin/add-domain', async (req, res) => {
   }
 });
 
-// 获取所有域名列表
-app.get('/admin/domains', async (req, res) => {
+// API接口：获取所有域名列表
+app.get('/api/domains', async (req, res) => {
   try {
+    const { token } = req.query;
+    
+    // 验证token
+    if (token !== API_TOKEN) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid API token'
+      });
+    }
+    
     const result = await getAllDomains();
     res.json(result);
   } catch (error) {
@@ -133,11 +136,8 @@ app.post('/process-image', upload.single('image'), async (req, res) => {
   }
 });
 
-// 静态文件服务（用于管理页面）
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-app.use('/admin-panel', express.static(path.join(__dirname, '../admin')));
-
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`服务运行在端口 ${port}`);
+  console.log(`API Token: ${API_TOKEN}`);
 });
