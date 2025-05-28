@@ -36,14 +36,7 @@ COPY server/package*.json ./server/
 
 # 安装server依赖
 WORKDIR /app/server
-RUN npm ci --only=production
-
-# 强制重新安装Sharp以确保二进制兼容
-RUN npm uninstall sharp
-RUN npm install sharp --platform=linuxmusl --arch=x64
-
-# 清理缓存
-RUN npm cache clean --force
+RUN npm ci --omit=dev
 
 # 回到app目录
 WORKDIR /app
@@ -54,7 +47,16 @@ COPY --from=builder /app/dist ./dist
 # 复制服务器代码
 COPY server ./server
 
-# 创建uploads目录
+# 重新安装Sharp以确保二进制兼容（在复制代码之后）
+WORKDIR /app/server
+RUN npm uninstall sharp
+RUN npm install sharp --platform=linuxmusl --arch=x64
+
+# 清理缓存
+RUN npm cache clean --force
+
+# 回到app目录并创建uploads目录
+WORKDIR /app
 RUN mkdir -p uploads
 
 # 暴露端口
