@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - WP_AUTH_TOKEN=${WP_AUTH_TOKEN:-wp-img-auth-2024-fx-token-9k8j7h6g5f4d3s2a1z}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE:-10485760}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/validate-domain"]
+      interval: 30s
+      timeout: 10s
+      retries: 3 

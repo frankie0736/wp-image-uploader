@@ -1,0 +1,41 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  /* 防止布局抖动 */
+  min-height: 100vh;
+  /* 启用硬件加速 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+/* 自定义样式 */
+.ant-upload-drag {
+  border: 2px dashed #d9d9d9 !important;
+  border-radius: 8px !important;
+}
+
+.ant-upload-drag:hover {
+  border-color: #1890ff !important;
+}
+
+.ant-upload-drag-icon {
+  font-size: 48px !important;
+  color: #1890ff !important;
+} 

@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.git
+.env
+.DS_Store
+*.md
+.vscode
+.idea
+dist
+uploads 
