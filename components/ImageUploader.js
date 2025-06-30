@@ -119,28 +119,79 @@ const ImageUploader = () => {
     }
   }
 
+  // 计算进度百分比
+  const progressPercent = totalCount > 0 ? Math.round((uploadedCount / totalCount) * 100) : 0
+
   return (
-    <div>
-      <Dragger {...uploadProps} disabled={uploading}>
-        <p className="ant-upload-drag-icon">
-          <InboxOutlined />
-        </p>
-        <p className="ant-upload-text">
-          {uploading 
-            ? '正在上传...'
-            : '点击或拖拽图片到此区域上传'
-          }
-        </p>
-        <p className="ant-upload-hint">
-          支持单个或多个图片上传（同时处理最多{CONCURRENT_LIMIT}张）
-        </p>
-      </Dragger>
+    <div style={{ position: 'relative' }}>
+      {/* 拖拽上传区域 - 固定高度避免CLS */}
+      <div style={{ 
+        minHeight: '180px', 
+        marginBottom: '16px',
+        position: 'relative'
+      }}>
+        <Dragger {...uploadProps} disabled={uploading}>
+          <div className="ant-upload-drag-container">
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">
+              {uploading 
+                ? '正在上传...'
+                : '点击或拖拽图片到此区域上传'
+              }
+            </p>
+            <p className="ant-upload-hint">
+              支持单个或多个图片上传（同时处理最多{CONCURRENT_LIMIT}张）
+            </p>
+          </div>
+        </Dragger>
+      </div>
+      
+      {/* Progress区域 - 预留固定空间防止CLS */}
+      <div style={{ 
+        height: '24px', 
+        position: 'relative',
+        marginBottom: '8px'
+      }}>
+        {uploading && totalCount > 0 ? (
+          <Progress 
+            percent={progressPercent}
+            status="active"
+            strokeColor={{
+              '0%': '#108ee9',
+              '100%': '#87d068',
+            }}
+            style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0
+            }}
+          />
+        ) : (
+          // 占位元素，保持布局稳定
+          <div style={{ 
+            height: '8px', 
+            background: 'transparent',
+            borderRadius: '100px'
+          }} />
+        )}
+      </div>
+      
+      {/* 状态信息显示区域 */}
       {uploading && totalCount > 0 && (
-        <Progress 
-          percent={Math.round((uploadedCount / totalCount) * 100)} 
-          status="active"
-          style={{ marginTop: 16 }}
-        />
+        <div style={{
+          textAlign: 'center',
+          color: '#666',
+          fontSize: '14px',
+          marginTop: '8px',
+          minHeight: '20px'
+        }}>
+          <span>
+            正在上传：{uploadedCount} / {totalCount} 张图片
+          </span>
+        </div>
       )}
     </div>
   )

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "perf:check": "node scripts/performance-check.js",
+    "perf:build": "npm run build && npm run perf:check"
   },
   "dependencies": {
     "next": "^14.2.5",
