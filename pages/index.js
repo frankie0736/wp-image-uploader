@@ -5,14 +5,13 @@ import useConfigStore from '../store/configStore'
 
 export default function Home() {
   const { isConfigured, clearConfig } = useConfigStore()
-  const [showSettings, setShowSettings] = useState(true)
+  const [showSettings, setShowSettings] = useState(false) // 默认不显示设置
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    // 等待store从localStorage加载数据后再设置showSettings
-    setShowSettings(!isConfigured)
+    // 只标记已加载，不自动显示设置
     setIsHydrated(true)
-  }, [isConfigured])
+  }, [])
 
   const handleSettingsClick = () => {
     setShowSettings(!showSettings)
@@ -20,7 +19,7 @@ export default function Home() {
 
   const handleLogout = () => {
     clearConfig()
-    setShowSettings(true)
+    setShowSettings(true) // 清除配置后显示设置界面
   }
 
   return (
@@ -31,20 +30,20 @@ export default function Home() {
             <h1 className="page-title">
               WordPress 图片智能上传工具
             </h1>
-            {isConfigured && (
-              <div className="button-group">
-                <button 
-                  className="btn"
-                  onClick={handleSettingsClick}
-                >
-                  <span>⚙️</span>
-                  {showSettings ? '返回上传' : '设置'}
-                </button>
+            <div className="button-group">
+              <button 
+                className="btn"
+                onClick={handleSettingsClick}
+              >
+                <span>⚙️</span>
+                {showSettings ? '返回上传' : '设置'}
+              </button>
+              {isConfigured && (
                 <button onClick={handleLogout} className="btn btn-link">
                   清除配置
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           
           {showSettings ? (
