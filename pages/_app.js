@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
+import { ConfigProvider } from 'antd'
+import zhCN from 'antd/locale/zh_CN'
 import '../styles/globals.css'
 import '../styles/components.css'
 import useConfigStore from '../store/configStore'
+import { theme } from '../lib/antd-theme'
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
@@ -9,5 +12,12 @@ export default function App({ Component, pageProps }) {
     useConfigStore.persist.rehydrate()
   }, [])
   
-  return <Component {...pageProps} />
+  return (
+    <ConfigProvider 
+      locale={zhCN}
+      theme={theme}
+    >
+      <Component {...pageProps} />
+    </ConfigProvider>
+  )
 } 

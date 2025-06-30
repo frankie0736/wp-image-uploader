@@ -4,10 +4,7 @@ const nextConfig = {
   swcMinify: true,
   experimental: {
     serverComponentsExternalPackages: ['sharp'],
-    optimizeCss: false // 禁用CSS优化避免critters问题
-  },
-  compiler: {
-    styledComponents: true
+    optimizeCss: true // 启用CSS优化
   },
   api: {
     bodyParser: {
@@ -21,7 +18,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   compress: true,
   // 输出配置
-  output: 'standalone'
+  output: 'standalone',
+  // 优化字体加载
+  optimizeFonts: true,
 }
 
 module.exports = nextConfig 
