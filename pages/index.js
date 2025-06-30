@@ -1,11 +1,18 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ConfigForm from '../components/ConfigForm'
 import ImageUploader from '../components/ImageUploader'
 import useConfigStore from '../store/configStore'
 
 export default function Home() {
   const { isConfigured, clearConfig } = useConfigStore()
-  const [showSettings, setShowSettings] = useState(!isConfigured)
+  const [showSettings, setShowSettings] = useState(true)
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    // 等待store从localStorage加载数据后再设置showSettings
+    setShowSettings(!isConfigured)
+    setIsHydrated(true)
+  }, [isConfigured])
 
   const handleSettingsClick = () => {
     setShowSettings(!showSettings)

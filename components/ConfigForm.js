@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Form, Input, Button, Switch, Card, message, InputNumber } from 'antd'
 import useConfigStore from '../store/configStore'
 
 const ConfigForm = () => {
   const [loading, setLoading] = useState(false)
+  const [form] = Form.useForm()
   const { 
     wpUrl,
     wpUsername,
@@ -14,6 +15,19 @@ const ConfigForm = () => {
     maxImageWidth,
     setConfig 
   } = useConfigStore()
+
+  useEffect(() => {
+    // 当store数据更新时，更新表单值
+    form.setFieldsValue({
+      wpUrl: wpUrl || '',
+      wpUsername: wpUsername || '',
+      wpPassword: wpPassword || '',
+      openaiKey: openaiKey || '',
+      openaiUrl: openaiUrl || 'https://aihubmix.com/v1',
+      compressImages: compressImages || false,
+      maxImageWidth: maxImageWidth || 1920
+    })
+  }, [wpUrl, wpUsername, wpPassword, openaiKey, openaiUrl, compressImages, maxImageWidth, form])
 
   const onFinish = async (values) => {
     setLoading(true)
@@ -47,17 +61,18 @@ const ConfigForm = () => {
   return (
     <Card title="WordPress 配置" style={{ maxWidth: 600, margin: '0 auto' }}>
       <Form
+        form={form}
         name="config"
         layout="vertical"
         onFinish={onFinish}
         initialValues={{
-          wpUrl: wpUrl || '',
-          wpUsername: wpUsername || '',
-          wpPassword: wpPassword || '',
-          openaiKey: openaiKey || '',
-          openaiUrl: openaiUrl || 'https://aihubmix.com/v1',
-          compressImages: compressImages || false,
-          maxImageWidth: maxImageWidth || 1920
+          wpUrl: '',
+          wpUsername: '',
+          wpPassword: '',
+          openaiKey: '',
+          openaiUrl: 'https://aihubmix.com/v1',
+          compressImages: false,
+          maxImageWidth: 1920
         }}
       >
         <Form.Item
