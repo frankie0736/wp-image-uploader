@@ -93,7 +93,7 @@ const ConfigForm = () => {
           label="AIHubMix API 地址"
           name="openaiUrl"
         >
-          <Input value="https://aihubmix.com/v1" disabled />
+          <Input placeholder="https://aihubmix.com/v1" />
         </Form.Item>
 
         <Form.Item
