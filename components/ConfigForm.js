@@ -4,7 +4,16 @@ import useConfigStore from '../store/configStore'
 
 const ConfigForm = () => {
   const [loading, setLoading] = useState(false)
-  const { setConfig } = useConfigStore()
+  const { 
+    wpUrl,
+    wpUsername,
+    wpPassword,
+    openaiKey,
+    openaiUrl,
+    compressImages,
+    maxImageWidth,
+    setConfig 
+  } = useConfigStore()
 
   const onFinish = async (values) => {
     setLoading(true)
@@ -42,9 +51,13 @@ const ConfigForm = () => {
         layout="vertical"
         onFinish={onFinish}
         initialValues={{
-          compressImages: false,
-          maxImageWidth: 1920,
-          openaiUrl: 'https://aihubmix.com/v1'
+          wpUrl: wpUrl || '',
+          wpUsername: wpUsername || '',
+          wpPassword: wpPassword || '',
+          openaiKey: openaiKey || '',
+          openaiUrl: openaiUrl || 'https://aihubmix.com/v1',
+          compressImages: compressImages || false,
+          maxImageWidth: maxImageWidth || 1920
         }}
       >
         <Form.Item
