@@ -26,6 +26,7 @@ const useConfigStore = create(
     }),
     {
       name: 'wp-image-uploader-config', // localStorage的key名称
+      skipHydration: true, // 跳过自动hydration，避免SSR问题
     }
   )
 )
