@@ -28,7 +28,7 @@ export default function Home() {
         <div style={{ maxWidth: 800, width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: 30 }}>
             <h1 className="page-title">
-              WordPress 图片智能上传工具
+              WordPress 图片智能上传工具 v1.0
             </h1>
             <div className="button-group">
               <button 
