@@ -47,7 +47,7 @@ export default function Home() {
           </div>
           
           {showSettings ? (
-            <ConfigForm />
+            <ConfigForm onSuccess={() => setShowSettings(false)} />
           ) : (
             <ImageUploader />
           )}

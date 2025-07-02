@@ -4,7 +4,7 @@ import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import useConfigStore from '../store/configStore'
 import axios from 'axios'
 
-const ConfigForm = () => {
+const ConfigForm = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResults, setTestResults] = useState(null)
@@ -58,6 +58,13 @@ const ConfigForm = () => {
           isConfigured: true
         })
         message.success('配置保存成功！所有测试通过！')
+        
+        // 延迟一秒后自动关闭设置界面
+        if (onSuccess) {
+          setTimeout(() => {
+            onSuccess()
+          }, 1000)
+        }
       } else {
         // 显示具体的错误信息
         const errors = []
