@@ -6,48 +6,35 @@ export async function uploadToWordPress(imageFile, metadata, config) {
       throw new Error('WordPress URL 未设置')
     }
 
-    const fileExtension = imageFile.name.split('.').pop()
-    const newFile = new File(
-      [imageFile], 
-      `${metadata.filename}.${fileExtension}`,
-      { type: imageFile.type }
-    )
+    // Read file as base64
+    const reader = new FileReader()
+    const base64Promise = new Promise((resolve, reject) => {
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror = reject
+    })
+    reader.readAsDataURL(imageFile)
+    const base64Data = await base64Promise
 
-    const formData = new FormData()
-    formData.append('file', newFile)
-    
-    const headers = {
-      'Content-Type': 'multipart/form-data',
-      'Authorization': 'Basic ' + btoa(config.wpUsername + ':' + config.wpPassword)
-    }
-
-    const baseUrl = config.wpUrl.replace(/\/$/, '')
     console.log('开始上传图片')
     
+    // Use our proxy endpoint instead of direct WordPress API call
     const response = await axios.post(
-      `${baseUrl}/wp-json/wp/v2/media`,
-      formData,
-      { headers }
-    )
-
-    console.log('图片上传成功，开始更新元数据...')
-    
-    const updateHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Basic ' + btoa(config.wpUsername + ':' + config.wpPassword)
-    }
-
-    await axios.post(
-      `${baseUrl}/wp-json/wp/v2/media/${response.data.id}`,
+      '/api/wordpress-upload',
       {
-        title: metadata.title,
-        alt_text: metadata.alt
-      },
-      { headers: updateHeaders }
+        wpUrl: config.wpUrl,
+        wpUsername: config.wpUsername,
+        wpPassword: config.wpPassword,
+        imageData: {
+          base64: base64Data,
+          originalName: imageFile.name,
+          mimeType: imageFile.type
+        },
+        metadata: metadata
+      }
     )
 
-    console.log('元数据更新成功')
-    return response.data
+    console.log('上传成功')
+    return response.data.data
   } catch (error) {
     console.error('上传过程出错:', error.response?.data || error)
     throw new Error(error.response?.data?.message || '上传失败')

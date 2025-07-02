@@ -6,11 +6,6 @@ const nextConfig = {
     serverComponentsExternalPackages: ['sharp'],
     optimizeCss: true // 启用CSS优化
   },
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
@@ -21,6 +16,8 @@ const nextConfig = {
   output: 'standalone',
   // 优化字体加载
   optimizeFonts: true,
+  // 修复 ESM 模块问题
+  transpilePackages: ['antd', 'rc-util', '@ant-design/icons', 'rc-pagination', 'rc-picker'],
 }
 
 module.exports = nextConfig 

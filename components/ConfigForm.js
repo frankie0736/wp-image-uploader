@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Form, Input, Button, Switch, Card, message, InputNumber } from 'antd'
+import { Form, Input, Button, Switch, Card, message, InputNumber, Alert, Spin } from 'antd'
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import useConfigStore from '../store/configStore'
+import axios from 'axios'
 
 const ConfigForm = () => {
   const [loading, setLoading] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [testResults, setTestResults] = useState(null)
   const [form] = Form.useForm()
   const { 
     wpUrl,
@@ -31,30 +35,42 @@ const ConfigForm = () => {
 
   const onFinish = async (values) => {
     setLoading(true)
+    setTesting(true)
+    setTestResults(null)
+    
     try {
-      // 验证 WordPress 连接
-      const formData = new FormData()
-      formData.append('domain', values.wpUrl)
-      
-      const response = await fetch('/api/validate-domain', {
-        method: 'POST',
-        body: formData
+      // 先测试配置
+      const testResponse = await axios.post('/api/test-config', {
+        openaiApiKey: values.openaiKey,
+        openaiUrl: values.openaiUrl,
+        wpUrl: values.wpUrl,
+        wpUsername: values.wpUsername,
+        wpPassword: values.wpPassword
       })
-      
-      if (response.ok) {
+
+      const { results } = testResponse.data
+      setTestResults(results)
+
+      // 如果所有测试都通过，保存配置
+      if (testResponse.data.success) {
         setConfig({
           ...values,
           isConfigured: true
         })
-        message.success('配置保存成功！')
+        message.success('配置保存成功！所有测试通过！')
       } else {
-        message.error('WordPress 配置验证失败，请检查配置信息')
+        // 显示具体的错误信息
+        const errors = []
+        if (!results.openai.success) errors.push(`OpenAI: ${results.openai.message}`)
+        if (!results.wordpress.success) errors.push(`WordPress: ${results.wordpress.message}`)
+        message.error('配置测试失败: ' + errors.join('; '))
       }
     } catch (error) {
       console.error('配置保存失败:', error)
       message.error('配置保存失败: ' + error.message)
     } finally {
       setLoading(false)
+      setTesting(false)
     }
   }
 
@@ -144,6 +160,38 @@ const ConfigForm = () => {
             保存配置
           </Button>
         </Form.Item>
+
+        {/* 测试结果显示 */}
+        {testing && (
+          <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <Spin tip="正在测试配置..." />
+          </div>
+        )}
+        
+        {testResults && !testing && (
+          <div style={{ marginTop: 16 }}>
+            {testResults.openai && (
+              <Alert
+                message="OpenAI API 测试"
+                description={testResults.openai.message}
+                type={testResults.openai.success ? 'success' : 'error'}
+                icon={testResults.openai.success ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                showIcon
+                style={{ marginBottom: 8 }}
+              />
+            )}
+            
+            {testResults.wordpress && (
+              <Alert
+                message="WordPress API 测试"
+                description={testResults.wordpress.message}
+                type={testResults.wordpress.success ? 'success' : 'error'}
+                icon={testResults.wordpress.success ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                showIcon
+              />
+            )}
+          </div>
+        )}
       </Form>
     </Card>
   )

@@ -34,3 +34,11 @@ Thumbs.db
 CLAUDE.md
 DEPLOY.md
 .cursorrules
+.claude/
+
+# Test files
+__tests__/
+*.test.js
+*.spec.js
+coverage/
+.next/
